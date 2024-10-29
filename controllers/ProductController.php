@@ -44,38 +44,38 @@ class ProductController
     }
 
     // Function to handle product creation
-    public function addNewProduct()
+   public function addNewProduct()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Validate common inputs
-            $sku = $_POST['sku'] ?? null;
-            $name = $_POST['name'] ?? null;
-            $price = $_POST['price'] ?? null;
-            $type = $_POST['type'] ?? null;
-
+            // Sanitize common inputs
+            $sku = filter_input(INPUT_POST, 'sku', FILTER_SANITIZE_STRING);
+            $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+            $price = filter_input(INPUT_POST, 'price', FILTER_VALIDATE_FLOAT);
+            $type = filter_input(INPUT_POST, 'type', FILTER_SANITIZE_STRING);
+    
             if (empty($name) || empty($price) || empty($type)) {
                 echo "<script>alert('Please, submit required data');</script>";
                 return;
             }
-
+    
             // Create a specific product instance dynamically using the ProductFactory
             $productFactory = new ProductFactory();
             $product = $productFactory->createProduct($type, $this->conn);
-
+    
             if (!$product) {
                 echo "<script>alert('Invalid product type');</script>";
                 return;
             }
-
+    
             // Set common product attributes
             $product->sku = $sku;
             $product->name = $name;
             $product->price = $price;
             $product->type = $type;
-
+    
             // Dynamically populate product-specific attributes
             $product->populateSpecificAttributes($_POST, true);
-
+    
             // Try to create the product
             try {
                 if ($product->create()) {
